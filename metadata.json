@@ -1,0 +1,6 @@
+{
+  "name": "AtlasFit - Interactive Muscle Map & Workout Generator",
+  "description": "Interactive front and back anatomical muscle selector to instantly view targeted exercises, form guides, and build customized gym workout routines.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

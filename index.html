@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';" />
+  
+  <title>JDFit — Interactive Muscle Map & Workout Generator</title>
+  <meta name="description" content="Production-ready interactive anatomical muscle selector, zero-equipment & gym workout routine generator, and one-rep max calculator." />
+  <meta property="og:title" content="JDFit — Interactive Muscle Map & Workout Generator" />
+  <meta property="og:description" content="Production-ready interactive anatomical muscle selector, zero-equipment & gym workout routine generator, and one-rep max calculator." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS Framework CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Outfit', 'sans-serif'],
+            body: ['"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Modular Stylesheet -->
+  <link rel="stylesheet" href="/css/styles.css" />
+
+  <!-- Critical SVG Anatomical Muscle Map Glowing Styles -->
+  <style>
+    .muscle-path {
+      cursor: pointer;
+      transition: fill 0.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      fill: #1e293b;
+      stroke: #334155;
+      stroke-width: 1.2px;
+    }
+    .muscle-group {
+      cursor: pointer;
+      outline: none;
+    }
+    .muscle-group:hover .muscle-path,
+    .muscle-path:hover,
+    .muscle-group:focus-visible .muscle-path,
+    .muscle-path:focus-visible {
+      fill: #0891b2 !important;
+      stroke: #67e8f9 !important;
+      stroke-width: 1.8px !important;
+      filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.8)) !important;
+    }
+    .muscle-selected .muscle-path,
+    .muscle-path.muscle-selected,
+    g.muscle-selected path,
+    g.muscle-selected rect {
+      fill: #22d3ee !important;
+      stroke: #ffffff !important;
+      stroke-width: 2.2px !important;
+      filter: drop-shadow(0 0 6px #22d3ee) drop-shadow(0 0 16px rgba(34, 211, 238, 0.95)) drop-shadow(0 0 28px rgba(6, 182, 212, 0.75)) !important;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col antialiased selection:bg-cyan-500/20 selection:text-cyan-300">
+
+  <!-- Screen Reader Live Status Region -->
+  <div id="appLiveRegion" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Header Navigation -->
+  <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-emerald-400 flex items-center justify-center text-slate-950 font-black text-xs tracking-tighter shadow-md shadow-cyan-500/20">
+          JD
+        </div>
+        <span class="text-lg font-extrabold tracking-tight text-white font-display">
+          JDFit
+        </span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          id="btnOpenCalculator"
+          class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-slate-900 border border-slate-800 transition-colors"
+          aria-haspopup="dialog"
+        >
+          <span>🧮 1RM Calculator</span>
+        </button>
+
+        <button
+          type="button"
+          id="btnHeaderBack"
+          class="hidden items-center gap-1.5 py-1.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 transition-colors"
+        >
+          <span>← Change Options</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Global Accessible Error / Alert Banner -->
+  <div id="globalAlertBox" class="hidden bg-rose-950/90 border-b border-rose-500/50 text-rose-200 px-4 py-3 text-xs text-center font-medium" role="alert">
+    <span id="globalAlertMessage"></span>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PAGE 1: WORKOUT CONFIGURATOR FORM                                         -->
+  <!-- ========================================================================= -->
+  <main id="configPage" class="max-w-3xl mx-auto px-4 py-8 flex-1 w-full space-y-7 animate-fade-in">
+    
+    <header class="text-center space-y-1.5">
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-white font-display">
+        Generate Your Workout
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-400">
+        Engineered for precision. Configure your session duration, body parts, mode, and equipment.
+      </p>
+    </header>
+
+    <div class="space-y-6">
+      
+      <!-- 1. DURATION FIELDSET -->
+      <fieldset class="p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl space-y-3">
+        <legend class="sr-only">Session Time Duration</legend>
+        <div class="flex items-center justify-between">
+          <div class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center text-xs font-black">1</span>
+            <span>Session Time Duration</span>
+          </div>
+          <span id="durationBadge" class="text-xs font-mono font-bold text-cyan-300">45 Mins Total</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <button type="button" id="btnDur30" class="dur-btn py-3.5 px-3 rounded-2xl text-center border transition-all bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-700">
+            <span class="text-base sm:text-lg font-black font-display block">30 mins</span>
+            <span class="text-[10px] font-mono text-slate-400 block">4 Focused Exercises</span>
+          </button>
+          <button type="button" id="btnDur45" class="dur-btn py-3.5 px-3 rounded-2xl text-center border transition-all bg-cyan-500 text-slate-950 border-cyan-400 shadow-lg shadow-cyan-500/20">
+            <span class="text-base sm:text-lg font-black font-display block">45 mins</span>
+            <span class="text-[10px] font-mono font-bold text-slate-950 block">6 Standard Exercises</span>
+          </button>
+          <button type="button" id="btnDur60" class="dur-btn py-3.5 px-3 rounded-2xl text-center border transition-all bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-700">
+            <span class="text-base sm:text-lg font-black font-display block">60 mins</span>
+            <span class="text-[10px] font-mono text-slate-400 block">8 Complete Exercises</span>
+          </button>
+        </div>
+      </fieldset>
+
+      <!-- 2. TRAINING MODE FIELDSET -->
+      <fieldset class="p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl space-y-3">
+        <legend class="sr-only">Training Mode</legend>
+        <div class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+          <span class="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center text-xs font-black">2</span>
+          <span>Training Mode</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-1 bg-slate-950 rounded-2xl border border-slate-800">
+          <button type="button" id="btnModeStrength" class="mode-btn py-3 px-2 rounded-xl text-xs font-bold transition-all text-center bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20">
+            Strength
+          </button>
+          <button type="button" id="btnModeEndurance" class="mode-btn py-3 px-2 rounded-xl text-xs font-bold transition-all text-center text-slate-400 hover:text-white">
+            Endurance
+          </button>
+          <button type="button" id="btnModeBoth" class="mode-btn py-3 px-2 rounded-xl text-xs font-bold transition-all text-center text-slate-400 hover:text-white">
+            Both (Hybrid)
+          </button>
+          <button type="button" id="btnModeCardio" class="mode-btn py-3 px-2 rounded-xl text-xs font-bold transition-all text-center text-slate-400 hover:text-white">
+            Cardio (Bodyweight)
+          </button>
+        </div>
+
+        <div id="modeDesc" class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/60 text-xs text-slate-300 leading-relaxed">
+          <!-- Populated by JS -->
+        </div>
+      </fieldset>
+
+      <!-- 3. TARGET BODY PARTS -->
+      <section class="p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl space-y-4" aria-labelledby="muscleSectionTitle">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 id="muscleSectionTitle" class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center text-xs font-black">3</span>
+              <span>Target Body Parts</span>
+            </h2>
+            <p id="muscleCountLabel" class="text-xs text-slate-400 mt-0.5">
+              No muscles selected — will generate a balanced Full Body session.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 self-start sm:self-auto">
+            <button type="button" id="btnSelectAllMuscles" class="text-xs text-cyan-400 hover:text-cyan-300 font-semibold px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60">
+              Select All
+            </button>
+            <button type="button" id="btnClearMuscles" class="text-xs text-slate-400 hover:text-slate-200 font-semibold px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60">
+              Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Body Diagram -->
+        <div class="flex flex-col items-center">
+          <div class="flex items-center p-1 bg-slate-900 border border-slate-800 rounded-lg mb-3 text-xs" role="tablist">
+            <button id="btnViewFront" role="tab" aria-selected="true" class="px-3 py-1 font-semibold rounded bg-cyan-500 text-slate-950">
+              Anterior (Front)
+            </button>
+            <button id="btnViewBack" role="tab" aria-selected="false" class="px-3 py-1 font-semibold text-slate-400 hover:text-white">
+              Posterior (Back)
+            </button>
+          </div>
+
+          <div class="relative w-full max-w-[280px] aspect-[300/520] flex items-center justify-center p-2 rounded-2xl bg-gradient-to-b from-slate-900/60 to-slate-950/80 border border-slate-800/80 shadow-xl overflow-visible">
+            <!-- Dynamic Hover / Selection Badge -->
+            <div id="muscleHoverBadge" class="hidden absolute top-2 left-2 right-2 z-10 flex items-center justify-between px-3 py-1.5 bg-slate-900/95 border border-cyan-500/40 rounded-xl backdrop-blur-md shadow-lg shadow-cyan-500/10 pointer-events-none transition-all">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span id="muscleHoverName" class="text-xs font-bold text-white uppercase tracking-wider">Muscle</span>
+              </div>
+              <span id="muscleHoverStatus" class="text-[11px] text-cyan-300 font-mono"></span>
+            </div>
+
+            <svg id="bodySvg" viewBox="0 0 300 520" class="w-full h-full select-none overflow-visible" role="img" aria-label="Interactive anatomical muscle map diagram"></svg>
+          </div>
+        </div>
+
+        <!-- Muscle Buttons Quick-Select Grid -->
+        <div class="pt-2 border-t border-slate-800/80">
+          <span class="text-[11px] font-mono uppercase text-slate-400 block mb-2 font-semibold">
+            Quick Select Muscles (Keyboard & Touch Accessible):
+          </span>
+          <div id="muscleButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+        </div>
+      </section>
+
+      <!-- 4. EXPERIENCE LEVEL FIELDSET -->
+      <fieldset class="p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl space-y-3">
+        <legend class="sr-only">Experience Level</legend>
+        <div class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+          <span class="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center text-xs font-black">4</span>
+          <span>Experience Level</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2.5">
+          <button type="button" id="btnDiffBeginner" class="diff-btn py-3 px-3 rounded-xl text-xs font-bold border transition-all bg-slate-950/70 border-slate-800 text-slate-400 hover:text-white">Beginner</button>
+          <button type="button" id="btnDiffIntermediate" class="diff-btn py-3 px-3 rounded-xl text-xs font-bold border transition-all bg-cyan-950/80 border-cyan-500 text-cyan-200 shadow-sm">Intermediate</button>
+          <button type="button" id="btnDiffAdvanced" class="diff-btn py-3 px-3 rounded-xl text-xs font-bold border transition-all bg-slate-950/70 border-slate-800 text-slate-400 hover:text-white">Advanced</button>
+        </div>
+      </fieldset>
+
+      <!-- 5. EQUIPMENT & MACHINES -->
+      <section id="equipmentSection" class="p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl space-y-3" aria-labelledby="equipmentSectionTitle">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 id="equipmentSectionTitle" class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center text-xs font-black">5</span>
+              <span>Available Equipment & Machines</span>
+            </h2>
+            <p id="equipSubtitle" class="text-xs text-slate-400 mt-0.5">5 equipment types active.</p>
+          </div>
+          <div class="flex items-center gap-2 self-start sm:self-auto">
+            <button type="button" id="btnHomePreset" class="text-xs font-semibold px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800/80 text-emerald-400 hover:bg-slate-800">
+              🏠 Home (Zero Equip)
+            </button>
+            <button type="button" id="btnGymPreset" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-300">
+              🏋️ Full Gym (All)
+            </button>
+          </div>
+        </div>
+
+        <div id="equipmentGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1"></div>
+      </section>
+
+      <!-- GENERATE CTA -->
+      <div class="pt-2">
+        <button
+          type="button"
+          id="btnGenerateWorkout"
+          class="w-full py-4 px-6 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-sm tracking-wide shadow-xl shadow-cyan-500/20 flex items-center justify-center gap-2.5 transition-all hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <span>✨ Generate Workout Routine</span>
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- PAGE 2: GENERATED WORKOUT RESULTS                                         -->
+  <!-- ========================================================================= -->
+  <main id="resultsPage" class="hidden max-w-4xl mx-auto px-4 py-8 flex-1 w-full space-y-6 animate-fade-in" aria-live="polite">
+    <div class="p-5 sm:p-6 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+          <span id="resultsMetaBadge" class="text-xs uppercase font-mono tracking-wider text-cyan-400 font-bold"></span>
+        </div>
+        <h1 id="resultsTitle" class="text-xl sm:text-2xl font-black text-white font-display"></h1>
+        <p id="resultsSub" class="text-xs text-slate-400 mt-1"></p>
+      </div>
+
+      <div class="flex items-center gap-2.5 shrink-0">
+        <button type="button" id="btnResultsBack" class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors">
+          Edit Options
+        </button>
+        <button type="button" id="btnOpenPlayer" class="py-2.5 px-5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
+          <span>▶ Play Workout</span>
+        </button>
+      </div>
+    </div>
+
+    <section class="space-y-4" aria-labelledby="resultsCountHeader">
+      <h2 id="resultsCountHeader" class="text-sm font-bold text-slate-300 uppercase tracking-wider px-1">Planned Exercise Order</h2>
+      <div id="exerciseListContainer" class="space-y-4"></div>
+    </section>
+
+    <div class="sticky bottom-4 z-30">
+      <button
+        type="button"
+        id="btnStickyPlay"
+        class="w-full py-4 px-6 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-sm tracking-wide shadow-2xl shadow-cyan-500/30 flex items-center justify-center gap-2.5 transition-all hover:scale-[1.01] active:scale-[0.99]"
+      >
+        <span>▶ Start Guided Workout Player</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- LIVE GUIDED WORKOUT PLAYER MODAL                                          -->
+  <!-- ========================================================================= -->
+  <div id="playerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="playerRoutineTitle">
+    <div class="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden my-4 flex flex-col max-h-[95vh]">
+      <div class="flex items-center justify-between px-6 py-4 bg-slate-900/95 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+          <div>
+            <span class="text-[10px] uppercase font-mono tracking-wider text-cyan-400 block font-bold">Live Workout Player</span>
+            <h2 id="playerRoutineTitle" class="text-sm font-bold text-white truncate max-w-xs">JDFit Routine</h2>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono font-bold text-slate-300">
+            <span>⏱️ </span><span id="playerTotalTime">0:00</span>
+          </div>
+          <button type="button" id="btnClosePlayer" class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" aria-label="Close workout player">✕</button>
+        </div>
+      </div>
+
+      <div id="playerBody" class="overflow-y-auto p-5 sm:p-6 space-y-5"></div>
+      <div id="playerFooter" class="p-4 sm:p-5 bg-slate-900 border-t border-slate-800 flex items-center justify-between gap-3"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 1RM CALCULATOR MODAL                                                      -->
+  <!-- ========================================================================= -->
+  <div id="calculatorModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="calcTitle">
+    <div class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="calcTitle" class="text-base font-bold text-white flex items-center gap-2">
+          <span>🧮 One-Rep Max Calculator</span>
+        </h3>
+        <button type="button" id="btnCloseCalculator" class="text-slate-400 hover:text-white text-lg p-1" aria-label="Close 1RM Calculator">✕</button>
+      </div>
+
+      <div id="calcErrorNotice" class="hidden p-2.5 rounded-xl bg-rose-950/80 border border-rose-600/60 text-rose-300 text-xs font-medium" role="alert"></div>
+
+      <div class="space-y-3">
+        <div>
+          <label for="calcWeight" class="text-xs text-slate-400 block mb-1">Weight Lifted (lbs / kg):</label>
+          <input type="number" id="calcWeight" value="185" min="1" step="any" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sm font-mono text-white focus:outline-none focus:border-cyan-400" />
+        </div>
+        <div>
+          <label for="calcReps" class="text-xs text-slate-400 block mb-1">Reps Completed (1-12):</label>
+          <input type="number" id="calcReps" value="6" min="1" max="12" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sm font-mono text-white focus:outline-none focus:border-cyan-400" />
+        </div>
+
+        <div class="p-4 rounded-2xl bg-cyan-950/60 border border-cyan-800/80 text-center space-y-1">
+          <span class="text-[10px] uppercase font-mono text-cyan-300 block font-semibold">Estimated 1RM</span>
+          <span id="calc1RMResult" class="text-3xl font-black font-mono text-white">222 lbs</span>
+          <span id="calc1RMExplanation" class="text-[11px] text-slate-400 block leading-tight"></span>
+        </div>
+
+        <!-- Training Percentage Table -->
+        <div id="calcPercentagesContainer"></div>
+
+        <!-- Strict Clinical Safety Disclaimer -->
+        <p class="text-[10px] text-slate-500 leading-normal border-t border-slate-800/80 pt-3">
+          ⚠️ <strong>Safety Disclaimer:</strong> 1RM estimates are mathematical approximations intended for healthy individuals with proper lifting technique. Actual maximal strength depends on biomechanics, neuromuscular fatigue, and recovery. This tool does not constitute medical or physical therapy advice. Always lift with safety spotters or mechanical safety pins.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-900 bg-slate-950 py-6 px-4">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+      <p>© 2026 JDFit · Modular Architecture · Interactive Anatomical Workout Engine</p>
+      <button type="button" id="btnResetAppData" class="text-[11px] text-slate-500 hover:text-rose-400 underline underline-offset-2 transition-colors">
+        Reset Saved App Data
+      </button>
+    </div>
+  </footer>
+
+  <!-- Modular Application Entry Point -->
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

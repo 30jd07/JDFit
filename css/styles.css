@@ -1,0 +1,136 @@
+/* =========================================================================
+   JDFit Production Stylesheet
+   Modern, accessible dark-theme styling with responsive layout and focus rings
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --color-bg: #020617;
+  --color-surface: #0f172a;
+  --color-surface-elevated: #1e293b;
+  --color-border: #334155;
+  --color-border-subtle: #1e293b;
+
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #64748b;
+
+  --color-cyan-500: #06b6d4;
+  --color-cyan-400: #22d3ee;
+  --color-cyan-950: #083344;
+
+  --color-emerald-500: #10b981;
+  --color-emerald-950: #064e3b;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: var(--font-display);
+}
+
+/* =========================================================================
+   ACCESSIBILITY & FOCUS STATES
+   ========================================================================= */
+:focus-visible {
+  outline: 2px solid var(--color-cyan-400) !important;
+  outline-offset: 2px !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* =========================================================================
+   INTERACTIVE ANATOMICAL MUSCLE MAP & NEON GLOW
+   ========================================================================= */
+.muscle-path {
+  cursor: pointer;
+  transition: fill 0.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  fill: #1e293b;
+  stroke: #334155;
+  stroke-width: 1.2px;
+}
+
+.muscle-group {
+  cursor: pointer;
+  outline: none;
+}
+
+.muscle-group:hover .muscle-path,
+.muscle-path:hover,
+.muscle-group:focus-visible .muscle-path,
+.muscle-path:focus-visible {
+  fill: #0891b2 !important;
+  stroke: #67e8f9 !important;
+  stroke-width: 1.8px !important;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.8)) !important;
+}
+
+.muscle-selected .muscle-path,
+.muscle-path.muscle-selected,
+g.muscle-selected path,
+g.muscle-selected rect {
+  fill: #22d3ee !important;
+  stroke: #ffffff !important;
+  stroke-width: 2.2px !important;
+  filter: drop-shadow(0 0 6px #22d3ee) drop-shadow(0 0 16px rgba(34, 211, 238, 0.95)) drop-shadow(0 0 28px rgba(6, 182, 212, 0.75)) !important;
+}
+
+/* =========================================================================
+   MODAL BACKDROP & ANIMATIONS
+   ========================================================================= */
+.modal-backdrop {
+  background-color: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Button active push-in sensation */
+button:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+/* Tabular figures for timers and numeric counters */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

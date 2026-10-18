@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Production build outputs
+dist/
+build/
+
+# AI Studio and local scratch
+.aistudio/
+*.local
+
+# Environment variables
+.env*
+!.env.example
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+*.log
