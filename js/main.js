@@ -3,13 +3,13 @@
  * Orchestrates UI views, interactive SVG body map, user events, validation, and storage.
  */
 
-import '../css/styles.css';
 import { MUSCLES, EQUIPMENT_OPTIONS, EXERCISES } from './exerciseData.js';
 import { generateWorkout } from './workoutEngine.js';
 import { calculateOneRepMax, validate1RMInput } from './oneRmCalculator.js';
 import { storageManager } from './storage.js';
 import { WorkoutPlayer } from './player.js';
 import { setupGlobalErrorHandling, escapeHtml } from './utils.js';
+import { mountExerciseVisualizer, getExerciseMovementPattern } from './exerciseVisualizer.js';
 
 // Application State
 let appState = {
@@ -321,6 +321,13 @@ function hideMuscleHoverBadge() {
   if (badge) badge.classList.add('hidden');
 }
 
+function getMuscleAttrs(muscleId, isSelected) {
+  if (isSelected) {
+    return 'class="muscle-path muscle-selected" fill="#22d3ee" stroke="#ffffff" stroke-width="2.5" filter="url(#neonGlow)" style="fill: #22d3ee !important; stroke: #ffffff !important; stroke-width: 2.5px !important; filter: drop-shadow(0 0 10px #22d3ee) drop-shadow(0 0 20px rgba(34,211,238,0.9)) !important;"';
+  }
+  return 'class="muscle-path" fill="#1e293b" stroke="#334155" stroke-width="1.2" style="fill: #1e293b; stroke: #334155; stroke-width: 1.2px;"';
+}
+
 function renderBodySvg() {
   const svg = document.getElementById('bodySvg');
   if (!svg) return;
@@ -331,8 +338,14 @@ function renderBodySvg() {
   let content = `
     <defs>
       <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
-        <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#22d3ee" flood-opacity="1"/>
-        <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#06b6d4" flood-opacity="0.85"/>
+        <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+        <feFlood flood-color="#22d3ee" flood-opacity="0.9" result="glowColor"/>
+        <feComposite in="glowColor" in2="blur" operator="in" result="glow"/>
+        <feMerge>
+          <feMergeNode in="glow"/>
+          <feMergeNode in="glow"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
       </filter>
       <filter id="hoverGlow" x="-30%" y="-30%" width="160%" height="160%">
         <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#22d3ee" flood-opacity="0.65"/>
@@ -346,60 +359,60 @@ function renderBodySvg() {
 
       <!-- Trapezius -->
       <g data-muscle="traps" tabindex="0" role="button" aria-label="Toggle Traps" class="muscle-group ${isSel('traps') ? 'muscle-selected' : ''}">
-        <path d="M136 68 L122 84 L140 85 L143 72 Z" class="muscle-path" />
-        <path d="M164 68 L178 84 L160 85 L157 72 Z" class="muscle-path" />
+        <path d="M136 68 L122 84 L140 85 L143 72 Z" ${getMuscleAttrs('traps', isSel('traps'))} />
+        <path d="M164 68 L178 84 L160 85 L157 72 Z" ${getMuscleAttrs('traps', isSel('traps'))} />
       </g>
 
       <!-- Shoulders -->
       <g data-muscle="shoulders" tabindex="0" role="button" aria-label="Toggle Shoulders" class="muscle-group ${isSel('shoulders') ? 'muscle-selected' : ''}">
-        <path d="M120 84 C104 88, 92 100, 91 116 C90 126, 96 135, 106 137 C112 126, 118 108, 122 88 Z" class="muscle-path" />
-        <path d="M180 84 C196 88, 208 100, 209 116 C210 126, 204 135, 194 137 C188 126, 182 108, 178 88 Z" class="muscle-path" />
+        <path d="M120 84 C104 88, 92 100, 91 116 C90 126, 96 135, 106 137 C112 126, 118 108, 122 88 Z" ${getMuscleAttrs('shoulders', isSel('shoulders'))} />
+        <path d="M180 84 C196 88, 208 100, 209 116 C210 126, 204 135, 194 137 C188 126, 182 108, 178 88 Z" ${getMuscleAttrs('shoulders', isSel('shoulders'))} />
       </g>
 
       <!-- Chest -->
       <g data-muscle="chest" tabindex="0" role="button" aria-label="Toggle Chest" class="muscle-group ${isSel('chest') ? 'muscle-selected' : ''}">
-        <path d="M148 88 L123 88 C115 102, 116 122, 122 136 C134 138, 146 132, 148 122 Z" class="muscle-path" />
-        <path d="M152 88 L177 88 C185 102, 184 122, 178 136 C166 138, 154 132, 152 122 Z" class="muscle-path" />
+        <path d="M148 88 L123 88 C115 102, 116 122, 122 136 C134 138, 146 132, 148 122 Z" ${getMuscleAttrs('chest', isSel('chest'))} />
+        <path d="M152 88 L177 88 C185 102, 184 122, 178 136 C166 138, 154 132, 152 122 Z" ${getMuscleAttrs('chest', isSel('chest'))} />
       </g>
 
       <!-- Biceps -->
       <g data-muscle="biceps" tabindex="0" role="button" aria-label="Toggle Biceps" class="muscle-group ${isSel('biceps') ? 'muscle-selected' : ''}">
-        <path d="M93 124 C86 138, 88 158, 98 172 C105 168, 108 148, 106 136 Z" class="muscle-path" />
-        <path d="M207 124 C214 138, 212 158, 202 172 C195 168, 192 148, 194 136 Z" class="muscle-path" />
+        <path d="M93 124 C86 138, 88 158, 98 172 C105 168, 108 148, 106 136 Z" ${getMuscleAttrs('biceps', isSel('biceps'))} />
+        <path d="M207 124 C214 138, 212 158, 202 172 C195 168, 192 148, 194 136 Z" ${getMuscleAttrs('biceps', isSel('biceps'))} />
       </g>
 
       <!-- Forearms -->
       <g data-muscle="forearms" tabindex="0" role="button" aria-label="Toggle Forearms" class="muscle-group ${isSel('forearms') ? 'muscle-selected' : ''}">
-        <path d="M96 178 C88 195, 78 220, 72 244 C77 246, 84 238, 90 220 C96 205, 101 190, 103 178 Z" class="muscle-path" />
-        <path d="M204 178 C212 195, 222 220, 228 244 C223 246, 216 238, 210 220 C204 205, 199 190, 197 178 Z" class="muscle-path" />
+        <path d="M96 178 C88 195, 78 220, 72 244 C77 246, 84 238, 90 220 C96 205, 101 190, 103 178 Z" ${getMuscleAttrs('forearms', isSel('forearms'))} />
+        <path d="M204 178 C212 195, 222 220, 228 244 C223 246, 216 238, 210 220 C204 205, 199 190, 197 178 Z" ${getMuscleAttrs('forearms', isSel('forearms'))} />
       </g>
 
       <!-- Abs -->
       <g data-muscle="abs" tabindex="0" role="button" aria-label="Toggle Abdominals" class="muscle-group ${isSel('abs') ? 'muscle-selected' : ''}">
-        <rect x="135" y="140" width="13" height="15" rx="3" class="muscle-path" />
-        <rect x="152" y="140" width="13" height="15" rx="3" class="muscle-path" />
-        <rect x="135" y="158" width="13" height="16" rx="3" class="muscle-path" />
-        <rect x="152" y="158" width="13" height="16" rx="3" class="muscle-path" />
-        <path d="M135 177 L148 177 L148 206 C143 204, 137 196, 135 186 Z" class="muscle-path" />
-        <path d="M165 177 L152 177 L152 206 C157 204, 163 196, 165 186 Z" class="muscle-path" />
+        <rect x="135" y="140" width="13" height="15" rx="3" ${getMuscleAttrs('abs', isSel('abs'))} />
+        <rect x="152" y="140" width="13" height="15" rx="3" ${getMuscleAttrs('abs', isSel('abs'))} />
+        <rect x="135" y="158" width="13" height="16" rx="3" ${getMuscleAttrs('abs', isSel('abs'))} />
+        <rect x="152" y="158" width="13" height="16" rx="3" ${getMuscleAttrs('abs', isSel('abs'))} />
+        <path d="M135 177 L148 177 L148 206 C143 204, 137 196, 135 186 Z" ${getMuscleAttrs('abs', isSel('abs'))} />
+        <path d="M165 177 L152 177 L152 206 C157 204, 163 196, 165 186 Z" ${getMuscleAttrs('abs', isSel('abs'))} />
       </g>
 
       <!-- Obliques -->
       <g data-muscle="obliques" tabindex="0" role="button" aria-label="Toggle Obliques" class="muscle-group ${isSel('obliques') ? 'muscle-selected' : ''}">
-        <path d="M120 144 C116 160, 118 180, 130 196 L131 180 C125 168, 126 154, 130 144 Z" class="muscle-path" />
-        <path d="M180 144 C184 160, 182 180, 170 196 L169 180 C175 168, 174 154, 170 144 Z" class="muscle-path" />
+        <path d="M120 144 C116 160, 118 180, 130 196 L131 180 C125 168, 126 154, 130 144 Z" ${getMuscleAttrs('obliques', isSel('obliques'))} />
+        <path d="M180 144 C184 160, 182 180, 170 196 L169 180 C175 168, 174 154, 170 144 Z" ${getMuscleAttrs('obliques', isSel('obliques'))} />
       </g>
 
       <!-- Quadriceps -->
       <g data-muscle="quadriceps" tabindex="0" role="button" aria-label="Toggle Quadriceps" class="muscle-group ${isSel('quadriceps') ? 'muscle-selected' : ''}">
-        <path d="M124 216 C112 236, 110 280, 118 335 C125 344, 136 344, 142 334 C148 290, 146 242, 144 216 Z" class="muscle-path" />
-        <path d="M176 216 C188 236, 190 280, 182 335 C175 344, 164 344, 158 334 C152 290, 154 242, 156 216 Z" class="muscle-path" />
+        <path d="M124 216 C112 236, 110 280, 118 335 C125 344, 136 344, 142 334 C148 290, 146 242, 144 216 Z" ${getMuscleAttrs('quadriceps', isSel('quadriceps'))} />
+        <path d="M176 216 C188 236, 190 280, 182 335 C175 344, 164 344, 158 334 C152 290, 154 242, 156 216 Z" ${getMuscleAttrs('quadriceps', isSel('quadriceps'))} />
       </g>
 
       <!-- Calves -->
       <g data-muscle="calves" tabindex="0" role="button" aria-label="Toggle Calves" class="muscle-group ${isSel('calves') ? 'muscle-selected' : ''}">
-        <path d="M120 365 C114 390, 114 430, 125 470 L137 470 C143 430, 141 390, 136 365 Z" class="muscle-path" />
-        <path d="M180 365 C186 390, 186 430, 175 470 L163 470 C157 430, 159 390, 164 365 Z" class="muscle-path" />
+        <path d="M120 365 C114 390, 114 430, 125 470 L137 470 C143 430, 141 390, 136 365 Z" ${getMuscleAttrs('calves', isSel('calves'))} />
+        <path d="M180 365 C186 390, 186 430, 175 470 L163 470 C157 430, 159 390, 164 365 Z" ${getMuscleAttrs('calves', isSel('calves'))} />
       </g>
 
       <!-- Feet Base -->
@@ -414,61 +427,61 @@ function renderBodySvg() {
 
       <!-- Traps -->
       <g data-muscle="traps" tabindex="0" role="button" aria-label="Toggle Trapezius" class="muscle-group ${isSel('traps') ? 'muscle-selected' : ''}">
-        <path d="M150 68 L124 86 L134 122 L150 148 L166 122 L176 86 Z" class="muscle-path" />
+        <path d="M150 68 L124 86 L134 122 L150 148 L166 122 L176 86 Z" ${getMuscleAttrs('traps', isSel('traps'))} />
       </g>
 
       <!-- Rear Deltoids / Shoulders -->
       <g data-muscle="shoulders" tabindex="0" role="button" aria-label="Toggle Shoulders" class="muscle-group ${isSel('shoulders') ? 'muscle-selected' : ''}">
-        <path d="M122 86 C105 92, 94 104, 92 118 C92 126, 98 135, 108 137 C113 124, 118 106, 122 86 Z" class="muscle-path" />
-        <path d="M178 86 C195 92, 206 104, 208 118 C208 126, 202 135, 192 137 C187 124, 182 106, 178 86 Z" class="muscle-path" />
+        <path d="M122 86 C105 92, 94 104, 92 118 C92 126, 98 135, 108 137 C113 124, 118 106, 122 86 Z" ${getMuscleAttrs('shoulders', isSel('shoulders'))} />
+        <path d="M178 86 C195 92, 206 104, 208 118 C208 126, 202 135, 192 137 C187 124, 182 106, 178 86 Z" ${getMuscleAttrs('shoulders', isSel('shoulders'))} />
       </g>
 
       <!-- Upper Back / Rhomboids -->
       <g data-muscle="upper_back" tabindex="0" role="button" aria-label="Toggle Upper Back" class="muscle-group ${isSel('upper_back') ? 'muscle-selected' : ''}">
-        <path d="M132 104 L120 120 L132 144 L138 128 Z" class="muscle-path" />
-        <path d="M168 104 L180 120 L168 144 L162 128 Z" class="muscle-path" />
+        <path d="M132 104 L120 120 L132 144 L138 128 Z" ${getMuscleAttrs('upper_back', isSel('upper_back'))} />
+        <path d="M168 104 L180 120 L168 144 L162 128 Z" ${getMuscleAttrs('upper_back', isSel('upper_back'))} />
       </g>
 
       <!-- Triceps -->
       <g data-muscle="triceps" tabindex="0" role="button" aria-label="Toggle Triceps" class="muscle-group ${isSel('triceps') ? 'muscle-selected' : ''}">
-        <path d="M93 124 C86 138, 88 158, 98 174 C104 168, 108 148, 107 136 Z" class="muscle-path" />
-        <path d="M207 124 C214 138, 212 158, 202 174 C196 168, 192 148, 193 136 Z" class="muscle-path" />
+        <path d="M93 124 C86 138, 88 158, 98 174 C104 168, 108 148, 107 136 Z" ${getMuscleAttrs('triceps', isSel('triceps'))} />
+        <path d="M207 124 C214 138, 212 158, 202 174 C196 168, 192 148, 193 136 Z" ${getMuscleAttrs('triceps', isSel('triceps'))} />
       </g>
 
       <!-- Forearms -->
       <g data-muscle="forearms" tabindex="0" role="button" aria-label="Toggle Forearms" class="muscle-group ${isSel('forearms') ? 'muscle-selected' : ''}">
-        <path d="M96 178 C88 195, 78 220, 72 244 C77 246, 84 238, 90 220 C96 205, 101 190, 103 178 Z" class="muscle-path" />
-        <path d="M204 178 C212 195, 222 220, 228 244 C223 246, 216 238, 210 220 C204 205, 199 190, 197 178 Z" class="muscle-path" />
+        <path d="M96 178 C88 195, 78 220, 72 244 C77 246, 84 238, 90 220 C96 205, 101 190, 103 178 Z" ${getMuscleAttrs('forearms', isSel('forearms'))} />
+        <path d="M204 178 C212 195, 222 220, 228 244 C223 246, 216 238, 210 220 C204 205, 199 190, 197 178 Z" ${getMuscleAttrs('forearms', isSel('forearms'))} />
       </g>
 
       <!-- Lats -->
       <g data-muscle="lats" tabindex="0" role="button" aria-label="Toggle Lats" class="muscle-group ${isSel('lats') ? 'muscle-selected' : ''}">
-        <path d="M136 132 C120 134, 114 150, 116 174 C120 184, 132 186, 142 184 L146 148 Z" class="muscle-path" />
-        <path d="M164 132 C180 134, 186 150, 184 174 C180 184, 168 186, 158 184 L154 148 Z" class="muscle-path" />
+        <path d="M136 132 C120 134, 114 150, 116 174 C120 184, 132 186, 142 184 L146 148 Z" ${getMuscleAttrs('lats', isSel('lats'))} />
+        <path d="M164 132 C180 134, 186 150, 184 174 C180 184, 168 186, 158 184 L154 148 Z" ${getMuscleAttrs('lats', isSel('lats'))} />
       </g>
 
       <!-- Lower Back -->
       <g data-muscle="lower_back" tabindex="0" role="button" aria-label="Toggle Lower Back" class="muscle-group ${isSel('lower_back') ? 'muscle-selected' : ''}">
-        <path d="M142 186 L142 214 L148 214 L148 186 Z" class="muscle-path" />
-        <path d="M152 186 L152 214 L158 214 L158 186 Z" class="muscle-path" />
+        <path d="M142 186 L142 214 L148 214 L148 186 Z" ${getMuscleAttrs('lower_back', isSel('lower_back'))} />
+        <path d="M152 186 L152 214 L158 214 L158 186 Z" ${getMuscleAttrs('lower_back', isSel('lower_back'))} />
       </g>
 
       <!-- Glutes -->
       <g data-muscle="glutes" tabindex="0" role="button" aria-label="Toggle Glutes" class="muscle-group ${isSel('glutes') ? 'muscle-selected' : ''}">
-        <path d="M149 216 C132 216, 118 226, 116 250 C114 268, 126 280, 148 280 L149 216 Z" class="muscle-path" />
-        <path d="M151 216 C168 216, 182 226, 184 250 C186 268, 174 280, 152 280 L151 216 Z" class="muscle-path" />
+        <path d="M149 216 C132 216, 118 226, 116 250 C114 268, 126 280, 148 280 L149 216 Z" ${getMuscleAttrs('glutes', isSel('glutes'))} />
+        <path d="M151 216 C168 216, 182 226, 184 250 C186 268, 174 280, 152 280 L151 216 Z" ${getMuscleAttrs('glutes', isSel('glutes'))} />
       </g>
 
       <!-- Hamstrings -->
       <g data-muscle="hamstrings" tabindex="0" role="button" aria-label="Toggle Hamstrings" class="muscle-group ${isSel('hamstrings') ? 'muscle-selected' : ''}">
-        <path d="M120 286 C116 304, 118 334, 124 354 C132 356, 142 354, 144 340 C146 320, 146 300, 146 286 Z" class="muscle-path" />
-        <path d="M180 286 C184 304, 182 334, 176 354 C168 356, 158 354, 156 340 C154 320, 154 300, 154 286 Z" class="muscle-path" />
+        <path d="M120 286 C116 304, 118 334, 124 354 C132 356, 142 354, 144 340 C146 320, 146 300, 146 286 Z" ${getMuscleAttrs('hamstrings', isSel('hamstrings'))} />
+        <path d="M180 286 C184 304, 182 334, 176 354 C168 356, 158 354, 156 340 C154 320, 154 300, 154 286 Z" ${getMuscleAttrs('hamstrings', isSel('hamstrings'))} />
       </g>
 
       <!-- Calves -->
       <g data-muscle="calves" tabindex="0" role="button" aria-label="Toggle Calves" class="muscle-group ${isSel('calves') ? 'muscle-selected' : ''}">
-        <path d="M118 368 C112 390, 112 418, 122 444 C128 466, 134 466, 136 444 C144 420, 144 390, 138 368 Z" class="muscle-path" />
-        <path d="M182 368 C188 390, 188 418, 178 444 C172 466, 166 466, 164 444 C156 420, 156 390, 162 368 Z" class="muscle-path" />
+        <path d="M118 368 C112 390, 112 418, 122 444 C128 466, 134 466, 136 444 C144 420, 144 390, 138 368 Z" ${getMuscleAttrs('calves', isSel('calves'))} />
+        <path d="M182 368 C188 390, 188 418, 178 444 C172 466, 166 466, 164 444 C156 420, 156 390, 162 368 Z" ${getMuscleAttrs('calves', isSel('calves'))} />
       </g>
 
       <!-- Feet Base -->
@@ -649,6 +662,7 @@ function renderResults() {
 
   routine.exercises.forEach((item, idx) => {
     const ex = item.exercise;
+    const patternInfo = getExerciseMovementPattern(ex);
     const card = document.createElement('article');
     card.className = 'p-5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-lg';
 
@@ -659,7 +673,8 @@ function renderResults() {
             ${idx + 1}
           </span>
           <div>
-            <div class="flex items-center gap-2 text-[11px] font-mono text-cyan-400">
+            <div class="flex items-center gap-2 text-[11px] font-mono text-cyan-400 flex-wrap">
+              <span class="font-bold text-cyan-300">✦ ${escapeHtml(patternInfo.label)}</span>·
               <span>${escapeHtml(ex.equipment)}</span>·
               <span>${escapeHtml(ex.difficulty)}</span>·
               <span class="${item.isTimed ? 'text-emerald-400 font-bold' : 'text-cyan-300 font-bold'}">
@@ -693,6 +708,16 @@ function renderResults() {
         </div>
       </div>
 
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <button type="button" id="btnToggleAnim-${idx}" class="text-[11px] font-mono font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-cyan-300 hover:border-cyan-400/60 hover:bg-slate-900 transition-all" aria-expanded="false">
+          <span>🎬</span> <span id="toggleAnimText-${idx}">Form Animation Demonstration</span>
+        </button>
+        <span class="text-[10px] font-mono text-slate-500">${escapeHtml(patternInfo.tempoGuide.split('·')[0])}</span>
+      </div>
+
+      <!-- Expandable Animated Visualizer Mount -->
+      <div id="visWrapper-${idx}" class="hidden pt-1"></div>
+
       <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 leading-relaxed">
         <strong class="text-cyan-300 block mb-0.5">Form Cue:</strong>
         ${escapeHtml(ex.coachingCues[0] || 'Focus on controlled eccentric lowering.')}
@@ -707,6 +732,29 @@ function renderResults() {
     `;
 
     container.appendChild(card);
+
+    // Toggle interactive animation visualizer
+    const toggleBtn = document.getElementById(`btnToggleAnim-${idx}`);
+    const toggleText = document.getElementById(`toggleAnimText-${idx}`);
+    const visWrapper = document.getElementById(`visWrapper-${idx}`);
+    let visualizerController = null;
+
+    toggleBtn?.addEventListener('click', () => {
+      if (!visWrapper) return;
+      const isHidden = visWrapper.classList.contains('hidden');
+      if (isHidden) {
+        visWrapper.classList.remove('hidden');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+        if (toggleText) toggleText.textContent = 'Hide Demonstration';
+        if (!visualizerController) {
+          visualizerController = mountExerciseVisualizer(ex, visWrapper);
+        }
+      } else {
+        visWrapper.classList.add('hidden');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        if (toggleText) toggleText.textContent = 'Form Animation Demonstration';
+      }
+    });
 
     // Render interactive checkboxes
     const setsWrapper = document.getElementById(`setsWrapper-${idx}`);

@@ -55,3 +55,32 @@
     break-inside: avoid;
   }
 }
+
+/* Anatomical Muscle Map Glow Styles */
+.muscle-path {
+  cursor: pointer;
+  fill: #1e293b;
+  stroke: #334155;
+  stroke-width: 1.2px;
+  transition: fill 0.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.muscle-group:hover .muscle-path,
+.muscle-path:hover,
+.muscle-group:focus-visible .muscle-path,
+.muscle-path:focus-visible {
+  fill: #0891b2 !important;
+  stroke: #67e8f9 !important;
+  stroke-width: 1.8px !important;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.8)) !important;
+}
+
+.muscle-selected .muscle-path,
+.muscle-path.muscle-selected,
+g.muscle-selected path,
+g.muscle-selected rect {
+  fill: #22d3ee !important;
+  stroke: #ffffff !important;
+  stroke-width: 2.5px !important;
+  filter: drop-shadow(0 0 10px #22d3ee) drop-shadow(0 0 20px rgba(34, 211, 238, 0.9)) !important;
+}

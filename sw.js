@@ -1,15 +1,18 @@
 /**
  * JDFit Service Worker
- * Provides offline caching, fast asset delivery, and network resilience.
+ * Network-first strategy to ensure code updates are always immediately visible,
+ * with cache fallback for offline PWA operation.
  */
 
-const CACHE_NAME = 'jdfit-cache-v1';
+const CACHE_NAME = 'jdfit-cache-v3';
 
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
+  '/jdfit.html',
   '/css/styles.css',
   '/js/main.js',
+  '/js/exerciseVisualizer.js',
   '/js/workoutEngine.js',
   '/js/exerciseData.js',
   '/js/oneRmCalculator.js',
@@ -19,14 +22,13 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS_TO_CACHE))
-      .then(() => self.skipWaiting())
-      .catch(err => {
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(ASSETS_TO_CACHE).catch(err => {
         console.warn('[JDFit SW] Pre-cache warning:', err);
-      })
+      });
+    })
   );
 });
 
@@ -38,6 +40,7 @@ self.addEventListener('activate', event => {
         Promise.all(
           keys.map(key => {
             if (key !== CACHE_NAME) {
+              console.log('[JDFit SW] Removing stale cache:', key);
               return caches.delete(key);
             }
           })
@@ -47,32 +50,28 @@ self.addEventListener('activate', event => {
   );
 });
 
+// Network-first strategy: always fetch fresh from network, fall back to cache when offline
 self.addEventListener('fetch', event => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request)
-        .then(networkResponse => {
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-            return networkResponse;
-          }
-          const responseToCache = networkResponse.clone();
+    fetch(event.request)
+      .then(networkResponse => {
+        if (networkResponse && networkResponse.status === 200) {
+          const clone = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
+            cache.put(event.request, clone).catch(() => {});
           });
-          return networkResponse;
-        })
-        .catch(() => {
-          // Offline fallback
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request).then(cached => {
+          if (cached) return cached;
           if (event.request.headers.get('accept')?.includes('text/html')) {
-            return caches.match('/index.html');
+            return caches.match('/index.html') || caches.match('/jdfit.html');
           }
         });
-    })
+      })
   );
 });

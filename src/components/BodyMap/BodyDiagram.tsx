@@ -39,7 +39,7 @@ export const BodyDiagram: React.FC<BodyDiagramProps> = ({
     const highlighted = isMuscleHighlighted(id);
 
     if (selected) {
-      return 'fill-cyan-400 stroke-cyan-200 stroke-[1.8] filter drop-shadow-[0_0_12px_rgba(34,211,238,0.85)] transition-all duration-200 cursor-pointer';
+      return 'fill-cyan-400 stroke-white stroke-[2.2] filter drop-shadow-[0_0_12px_rgba(34,211,238,0.95)] transition-all duration-200 cursor-pointer';
     }
     if (highlighted) {
       return 'fill-emerald-500/70 stroke-emerald-400 stroke-[1.5] filter drop-shadow-[0_0_6px_rgba(16,185,129,0.6)] transition-all duration-200 cursor-pointer';
@@ -48,6 +48,18 @@ export const BodyDiagram: React.FC<BodyDiagramProps> = ({
       return 'fill-cyan-500/50 stroke-cyan-300 stroke-[1.5] transition-all duration-150 cursor-pointer';
     }
     return 'fill-slate-800/90 hover:fill-slate-700/90 stroke-slate-700/60 stroke-[1] transition-colors duration-150 cursor-pointer';
+  };
+
+  const getMuscleStyle = (id: MuscleId): React.CSSProperties => {
+    if (isMuscleSelected(id)) {
+      return {
+        fill: '#22d3ee',
+        stroke: '#ffffff',
+        strokeWidth: 2.2,
+        filter: 'drop-shadow(0 0 10px #22d3ee) drop-shadow(0 0 20px rgba(34, 211, 238, 0.9))'
+      };
+    }
+    return {};
   };
 
   return (

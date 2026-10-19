@@ -35,9 +35,10 @@ const html = `<!doctype html>
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; }
     h1, h2, h3, h4, .font-display { font-family: 'Outfit', sans-serif; }
-    .muscle-path { cursor: pointer; transition: all 0.15s ease; fill: #1e293b; stroke: #334155; stroke-width: 1; }
-    .muscle-path:hover { fill: #0e7490; stroke: #22d3ee; }
-    .muscle-selected { fill: #22d3ee !important; stroke: #a5f3fc !important; stroke-width: 1.8 !important; filter: drop-shadow(0 0 10px rgba(34,211,238,0.85)); }
+    .muscle-path { cursor: pointer; transition: fill 0.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s cubic-bezier(0.16, 1, 0.3, 1); fill: #1e293b; stroke: #334155; stroke-width: 1.2px; }
+    .muscle-group { cursor: pointer; outline: none; }
+    .muscle-group:hover .muscle-path, .muscle-path:hover, .muscle-group:focus-visible .muscle-path, .muscle-path:focus-visible { fill: #0891b2 !important; stroke: #67e8f9 !important; stroke-width: 1.8px !important; filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.8)) !important; }
+    .muscle-selected .muscle-path, .muscle-path.muscle-selected, g.muscle-selected path, g.muscle-selected rect { fill: #22d3ee !important; stroke: #ffffff !important; stroke-width: 2.5px !important; filter: drop-shadow(0 0 10px #22d3ee) drop-shadow(0 0 20px rgba(34, 211, 238, 0.9)) !important; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col antialiased selection:bg-cyan-500/20 selection:text-cyan-300">

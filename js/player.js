@@ -4,6 +4,7 @@
  */
 
 import { formatSeconds, soundFx } from './utils.js';
+import { mountExerciseVisualizer } from './exerciseVisualizer.js';
 
 export class WorkoutPlayer {
   /**
@@ -32,6 +33,7 @@ export class WorkoutPlayer {
     this.secondsRemaining = 0;
     this.totalSeconds = 0;
     this.isPaused = false;
+    this.activeVisualizer = null;
 
     this.stopwatchInterval = null;
     this.countdownInterval = null;
@@ -55,6 +57,7 @@ export class WorkoutPlayer {
 
     if (this.titleEl) {
       this.titleEl.textContent = routine.title;
+      this.titleEl.setAttribute('title', routine.title);
     }
 
     this.modalEl.classList.remove('hidden');
@@ -68,10 +71,20 @@ export class WorkoutPlayer {
    * Closes the player and clears intervals.
    */
   close() {
+    this._cleanupVisualizer();
     this.modalEl.classList.add('hidden');
     document.body.classList.remove('overflow-hidden');
     this._clearIntervals();
     this.onSessionUpdate(this.routine);
+  }
+
+  _cleanupVisualizer() {
+    if (this.activeVisualizer) {
+      if (typeof this.activeVisualizer.cleanup === 'function') {
+        this.activeVisualizer.cleanup();
+      }
+      this.activeVisualizer = null;
+    }
   }
 
   _clearIntervals() {
@@ -229,6 +242,7 @@ export class WorkoutPlayer {
 
     // Finished Phase
     if (this.phase === 'finished') {
+      this._cleanupVisualizer();
       this.bodyEl.innerHTML = `
         <div class="p-8 text-center space-y-4">
           <div class="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-3xl mx-auto animate-bounce">
@@ -255,6 +269,7 @@ export class WorkoutPlayer {
 
     // Rest Phase
     if (this.phase === 'rest') {
+      this._cleanupVisualizer();
       this.bodyEl.innerHTML = `
         <div class="p-8 rounded-3xl bg-cyan-950/40 border border-cyan-500/40 text-center space-y-4">
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950 border border-cyan-800 text-cyan-300 text-xs font-semibold">
@@ -287,24 +302,35 @@ export class WorkoutPlayer {
     }
 
     // Exercise Phase
+    this._cleanupVisualizer();
     const item = this.routine.exercises[this.currentExerciseIndex];
     const ex = item.exercise;
 
     this.bodyEl.innerHTML = `
-      <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/80 pb-3">
-        <span>Exercise <strong class="text-white">${this.currentExerciseIndex + 1}</strong> of <strong class="text-white">${this.routine.exercises.length}</strong></span>
-        <span class="text-cyan-300 font-bold font-mono">Set ${this.currentSetIndex + 1} of ${item.customSets}</span>
+      <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/80 pb-2.5">
+        <div class="flex items-center gap-2">
+          <span>Exercise <strong class="text-white">${this.currentExerciseIndex + 1}</strong> of <strong class="text-white">${this.routine.exercises.length}</strong></span>
+          <span class="text-slate-600">·</span>
+          <span class="text-cyan-300 font-bold font-mono">Set ${this.currentSetIndex + 1} of ${item.customSets}</span>
+        </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono text-cyan-400" title="Total active workout session time">
+          <span class="text-slate-500">Session:</span>
+          <span class="font-bold tabular-nums">${formatSeconds(this.totalSeconds)}</span>
+        </div>
       </div>
 
-      <div class="p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+      <!-- Biomechanical Kinetic Form Animation Visualizer -->
+      <div id="playerVisualizerMount" class="w-full"></div>
+
+      <div class="p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
         <div class="flex items-start justify-between gap-3">
-          <div>
+          <div class="min-w-0">
             <div class="text-[11px] text-cyan-400 font-mono tracking-wide">${ex.equipment} · ${ex.mechanics}</div>
-            <h3 class="text-lg font-bold text-white">${ex.name}</h3>
+            <h3 class="text-base sm:text-lg font-bold text-white truncate">${ex.name}</h3>
           </div>
-          <div class="p-2.5 rounded-xl bg-cyan-950/80 border border-cyan-800/80 text-center shrink-0">
+          <div class="p-2 sm:p-2.5 rounded-xl bg-cyan-950/80 border border-cyan-800/80 text-center shrink-0">
             <span class="text-[10px] uppercase font-mono text-cyan-400 block font-semibold">${item.isTimed ? 'Timed' : 'Target'}</span>
-            <span class="text-base font-black font-mono text-white">${item.customReps}</span>
+            <span class="text-sm sm:text-base font-black font-mono text-white">${item.customReps}</span>
           </div>
         </div>
 
@@ -316,10 +342,10 @@ export class WorkoutPlayer {
         ${
           item.isTimed
             ? `
-          <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div class="p-3.5 sm:p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2">
             <div>
               <span class="text-[10px] uppercase font-mono text-slate-400 block font-semibold">Time Remaining</span>
-              <span class="text-3xl font-black font-mono text-white tabular-nums" id="playerCountdownDisplay">
+              <span class="text-2xl sm:text-3xl font-black font-mono text-white tabular-nums" id="playerCountdownDisplay">
                 ${formatSeconds(this.secondsRemaining)}
               </span>
             </div>
@@ -332,6 +358,12 @@ export class WorkoutPlayer {
         }
       </div>
     `;
+
+    // Mount visualizer for current exercise
+    const visMount = document.getElementById('playerVisualizerMount');
+    if (visMount) {
+      this.activeVisualizer = mountExerciseVisualizer(ex, visMount);
+    }
 
     if (item.isTimed) {
       document.getElementById('btnResetTimer')?.addEventListener('click', () => {

@@ -273,23 +273,23 @@
   </main>
 
   <!-- LIVE GUIDED WORKOUT PLAYER MODAL -->
-  <div id="playerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-    <div class="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden my-4 flex flex-col max-h-[95vh]" onclick="event.stopPropagation()">
-      <div class="flex items-center justify-between px-6 py-4 bg-slate-900/95 border-b border-slate-800">
-        <div class="flex items-center gap-3">
-          <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
-          <div>
-            <span class="text-[10px] uppercase font-mono tracking-wider text-cyan-400 block font-bold">Live Workout Player</span>
-            <h2 id="playerRoutineTitle" class="text-sm font-bold text-white truncate max-w-xs">JDFit Routine</h2>
+  <div id="playerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+    <div class="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden my-auto flex flex-col max-h-[92vh]" onclick="event.stopPropagation()">
+      <header class="sticky top-0 z-20 shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-3.5 bg-slate-900/98 border-b border-slate-800 gap-2 sm:gap-4 backdrop-blur-md">
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shrink-0"></span>
+          <div class="min-w-0 flex-1">
+            <span class="text-[9px] sm:text-[10px] uppercase font-mono tracking-wider text-cyan-400 block font-bold leading-tight">Live Workout Player</span>
+            <h2 id="playerRoutineTitle" class="text-xs sm:text-sm font-bold text-white truncate block" title="JDFit Workout Routine">JDFit Routine</h2>
           </div>
         </div>
-        <div class="flex items-center gap-3">
-          <div class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono font-bold text-slate-300">
-            <span>⏱️ </span><span id="playerTotalTime">0:00</span>
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-slate-950 border border-cyan-500/40 text-xs sm:text-sm font-mono font-bold text-cyan-300 shadow-sm shrink-0 whitespace-nowrap" id="playerTimerContainer">
+            <span>⏱️ </span><span id="playerTotalTime" class="tabular-nums tracking-wide">0:00</span>
           </div>
-          <button type="button" onclick="closePlayer()" class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">✕</button>
+          <button type="button" onclick="closePlayer()" class="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0">✕</button>
         </div>
-      </div>
+      </header>
 
       <div id="playerBody" class="overflow-y-auto p-5 sm:p-6 space-y-5"></div>
       <div id="playerFooter" class="p-4 sm:p-5 bg-slate-900 border-t border-slate-800 flex items-center justify-between gap-3"></div>
@@ -489,6 +489,13 @@
       });
     }
 
+    function getMuscleAttrs(muscleId, isSelected) {
+      if (isSelected) {
+        return 'class="muscle-path muscle-selected" fill="#22d3ee" stroke="#ffffff" stroke-width="2.5" filter="url(#neonGlow)" style="fill: #22d3ee !important; stroke: #ffffff !important; stroke-width: 2.5px !important; filter: drop-shadow(0 0 10px #22d3ee) drop-shadow(0 0 20px rgba(34,211,238,0.9)) !important;"';
+      }
+      return 'class="muscle-path" fill="#1e293b" stroke="#334155" stroke-width="1.2" style="fill: #1e293b; stroke: #334155; stroke-width: 1.2px;"';
+    }
+
     function renderBodySvg() {
       const svg = document.getElementById('bodySvg');
       if (!svg) return;
@@ -499,8 +506,14 @@
       let content = `
         <defs>
           <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#22d3ee" flood-opacity="1"/>
-            <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#06b6d4" flood-opacity="0.85"/>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+            <feFlood flood-color="#22d3ee" flood-opacity="0.9" result="glowColor"/>
+            <feComposite in="glowColor" in2="blur" operator="in" result="glow"/>
+            <feMerge>
+              <feMergeNode in="glow"/>
+              <feMergeNode in="glow"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
           </filter>
         </defs>
       `;
@@ -511,60 +524,60 @@
 
           <!-- Trapezius -->
           <g data-muscle="traps" tabindex="0" role="button" aria-label="Toggle Traps" class="muscle-group ${isSel('traps') ? 'muscle-selected' : ''}">
-            <path d="M136 68 L122 84 L140 85 L143 72 Z" class="muscle-path" />
-            <path d="M164 68 L178 84 L160 85 L157 72 Z" class="muscle-path" />
+            <path d="M136 68 L122 84 L140 85 L143 72 Z" ${getMuscleAttrs('traps', isSel('traps'))} />
+            <path d="M164 68 L178 84 L160 85 L157 72 Z" ${getMuscleAttrs('traps', isSel('traps'))} />
           </g>
 
           <!-- Shoulders -->
           <g data-muscle="shoulders" tabindex="0" role="button" aria-label="Toggle Shoulders" class="muscle-group ${isSel('shoulders') ? 'muscle-selected' : ''}">
-            <path d="M120 84 C104 88, 92 100, 91 116 C90 126, 96 135, 106 137 C112 126, 118 108, 122 88 Z" class="muscle-path" />
-            <path d="M180 84 C196 88, 208 100, 209 116 C210 126, 204 135, 194 137 C188 126, 182 108, 178 88 Z" class="muscle-path" />
+            <path d="M120 84 C104 88, 92 100, 91 116 C90 126, 96 135, 106 137 C112 126, 118 108, 122 88 Z" ${getMuscleAttrs('shoulders', isSel('shoulders'))} />
+            <path d="M180 84 C196 88, 208 100, 209 116 C210 126, 204 135, 194 137 C188 126, 182 108, 178 88 Z" ${getMuscleAttrs('shoulders', isSel('shoulders'))} />
           </g>
 
           <!-- Chest -->
           <g data-muscle="chest" tabindex="0" role="button" aria-label="Toggle Chest" class="muscle-group ${isSel('chest') ? 'muscle-selected' : ''}">
-            <path d="M148 88 L123 88 C115 102, 116 122, 122 136 C134 138, 146 132, 148 122 Z" class="muscle-path" />
-            <path d="M152 88 L177 88 C185 102, 184 122, 178 136 C166 138, 154 132, 152 122 Z" class="muscle-path" />
+            <path d="M148 88 L123 88 C115 102, 116 122, 122 136 C134 138, 146 132, 148 122 Z" ${getMuscleAttrs('chest', isSel('chest'))} />
+            <path d="M152 88 L177 88 C185 102, 184 122, 178 136 C166 138, 154 132, 152 122 Z" ${getMuscleAttrs('chest', isSel('chest'))} />
           </g>
 
           <!-- Biceps -->
           <g data-muscle="biceps" tabindex="0" role="button" aria-label="Toggle Biceps" class="muscle-group ${isSel('biceps') ? 'muscle-selected' : ''}">
-            <path d="M93 124 C86 138, 88 158, 98 172 C105 168, 108 148, 106 136 Z" class="muscle-path" />
-            <path d="M207 124 C214 138, 212 158, 202 172 C195 168, 192 148, 194 136 Z" class="muscle-path" />
+            <path d="M93 124 C86 138, 88 158, 98 172 C105 168, 108 148, 106 136 Z" ${getMuscleAttrs('biceps', isSel('biceps'))} />
+            <path d="M207 124 C214 138, 212 158, 202 172 C195 168, 192 148, 194 136 Z" ${getMuscleAttrs('biceps', isSel('biceps'))} />
           </g>
 
           <!-- Forearms -->
           <g data-muscle="forearms" tabindex="0" role="button" aria-label="Toggle Forearms" class="muscle-group ${isSel('forearms') ? 'muscle-selected' : ''}">
-            <path d="M96 178 C88 195, 78 220, 72 244 C77 246, 84 238, 90 220 C96 205, 101 190, 103 178 Z" class="muscle-path" />
-            <path d="M204 178 C212 195, 222 220, 228 244 C223 246, 216 238, 210 220 C204 205, 199 190, 197 178 Z" class="muscle-path" />
+            <path d="M96 178 C88 195, 78 220, 72 244 C77 246, 84 238, 90 220 C96 205, 101 190, 103 178 Z" ${getMuscleAttrs('forearms', isSel('forearms'))} />
+            <path d="M204 178 C212 195, 222 220, 228 244 C223 246, 216 238, 210 220 C204 205, 199 190, 197 178 Z" ${getMuscleAttrs('forearms', isSel('forearms'))} />
           </g>
 
           <!-- Abs -->
           <g data-muscle="abs" tabindex="0" role="button" aria-label="Toggle Abdominals" class="muscle-group ${isSel('abs') ? 'muscle-selected' : ''}">
-            <rect x="135" y="140" width="13" height="15" rx="3" class="muscle-path" />
-            <rect x="152" y="140" width="13" height="15" rx="3" class="muscle-path" />
-            <rect x="135" y="158" width="13" height="16" rx="3" class="muscle-path" />
-            <rect x="152" y="158" width="13" height="16" rx="3" class="muscle-path" />
-            <path d="M135 177 L148 177 L148 206 C143 204, 137 196, 135 186 Z" class="muscle-path" />
-            <path d="M165 177 L152 177 L152 206 C157 204, 163 196, 165 186 Z" class="muscle-path" />
+            <rect x="135" y="140" width="13" height="15" rx="3" ${getMuscleAttrs('abs', isSel('abs'))} />
+            <rect x="152" y="140" width="13" height="15" rx="3" ${getMuscleAttrs('abs', isSel('abs'))} />
+            <rect x="135" y="158" width="13" height="16" rx="3" ${getMuscleAttrs('abs', isSel('abs'))} />
+            <rect x="152" y="158" width="13" height="16" rx="3" ${getMuscleAttrs('abs', isSel('abs'))} />
+            <path d="M135 177 L148 177 L148 206 C143 204, 137 196, 135 186 Z" ${getMuscleAttrs('abs', isSel('abs'))} />
+            <path d="M165 177 L152 177 L152 206 C157 204, 163 196, 165 186 Z" ${getMuscleAttrs('abs', isSel('abs'))} />
           </g>
 
           <!-- Obliques -->
           <g data-muscle="obliques" tabindex="0" role="button" aria-label="Toggle Obliques" class="muscle-group ${isSel('obliques') ? 'muscle-selected' : ''}">
-            <path d="M120 144 C116 160, 118 180, 130 196 L131 180 C125 168, 126 154, 130 144 Z" class="muscle-path" />
-            <path d="M180 144 C184 160, 182 180, 170 196 L169 180 C175 168, 174 154, 170 144 Z" class="muscle-path" />
+            <path d="M120 144 C116 160, 118 180, 130 196 L131 180 C125 168, 126 154, 130 144 Z" ${getMuscleAttrs('obliques', isSel('obliques'))} />
+            <path d="M180 144 C184 160, 182 180, 170 196 L169 180 C175 168, 174 154, 170 144 Z" ${getMuscleAttrs('obliques', isSel('obliques'))} />
           </g>
 
           <!-- Quadriceps -->
           <g data-muscle="quadriceps" tabindex="0" role="button" aria-label="Toggle Quadriceps" class="muscle-group ${isSel('quadriceps') ? 'muscle-selected' : ''}">
-            <path d="M124 216 C112 236, 110 280, 118 335 C125 344, 136 344, 142 334 C148 290, 146 242, 144 216 Z" class="muscle-path" />
-            <path d="M176 216 C188 236, 190 280, 182 335 C175 344, 164 344, 158 334 C152 290, 154 242, 156 216 Z" class="muscle-path" />
+            <path d="M124 216 C112 236, 110 280, 118 335 C125 344, 136 344, 142 334 C148 290, 146 242, 144 216 Z" ${getMuscleAttrs('quadriceps', isSel('quadriceps'))} />
+            <path d="M176 216 C188 236, 190 280, 182 335 C175 344, 164 344, 158 334 C152 290, 154 242, 156 216 Z" ${getMuscleAttrs('quadriceps', isSel('quadriceps'))} />
           </g>
 
           <!-- Calves -->
           <g data-muscle="calves" tabindex="0" role="button" aria-label="Toggle Calves" class="muscle-group ${isSel('calves') ? 'muscle-selected' : ''}">
-            <path d="M120 365 C114 390, 114 430, 125 470 L137 470 C143 430, 141 390, 136 365 Z" class="muscle-path" />
-            <path d="M180 365 C186 390, 186 430, 175 470 L163 470 C157 430, 159 390, 164 365 Z" class="muscle-path" />
+            <path d="M120 365 C114 390, 114 430, 125 470 L137 470 C143 430, 141 390, 136 365 Z" ${getMuscleAttrs('calves', isSel('calves'))} />
+            <path d="M180 365 C186 390, 186 430, 175 470 L163 470 C157 430, 159 390, 164 365 Z" ${getMuscleAttrs('calves', isSel('calves'))} />
           </g>
 
           <!-- Feet Base -->
@@ -579,61 +592,61 @@
 
           <!-- Traps -->
           <g data-muscle="traps" tabindex="0" role="button" aria-label="Toggle Trapezius" class="muscle-group ${isSel('traps') ? 'muscle-selected' : ''}">
-            <path d="M150 68 L124 86 L134 122 L150 148 L166 122 L176 86 Z" class="muscle-path" />
+            <path d="M150 68 L124 86 L134 122 L150 148 L166 122 L176 86 Z" ${getMuscleAttrs('traps', isSel('traps'))} />
           </g>
 
           <!-- Rear Deltoids / Shoulders -->
           <g data-muscle="shoulders" tabindex="0" role="button" aria-label="Toggle Shoulders" class="muscle-group ${isSel('shoulders') ? 'muscle-selected' : ''}">
-            <path d="M122 86 C105 92, 94 104, 92 118 C92 126, 98 135, 108 137 C113 124, 118 106, 122 86 Z" class="muscle-path" />
-            <path d="M178 86 C195 92, 206 104, 208 118 C208 126, 202 135, 192 137 C187 124, 182 106, 178 86 Z" class="muscle-path" />
+            <path d="M122 86 C105 92, 94 104, 92 118 C92 126, 98 135, 108 137 C113 124, 118 106, 122 86 Z" ${getMuscleAttrs('shoulders', isSel('shoulders'))} />
+            <path d="M178 86 C195 92, 206 104, 208 118 C208 126, 202 135, 192 137 C187 124, 182 106, 178 86 Z" ${getMuscleAttrs('shoulders', isSel('shoulders'))} />
           </g>
 
           <!-- Upper Back / Rhomboids -->
           <g data-muscle="upper_back" tabindex="0" role="button" aria-label="Toggle Upper Back" class="muscle-group ${isSel('upper_back') ? 'muscle-selected' : ''}">
-            <path d="M132 104 L120 120 L132 144 L138 128 Z" class="muscle-path" />
-            <path d="M168 104 L180 120 L168 144 L162 128 Z" class="muscle-path" />
+            <path d="M132 104 L120 120 L132 144 L138 128 Z" ${getMuscleAttrs('upper_back', isSel('upper_back'))} />
+            <path d="M168 104 L180 120 L168 144 L162 128 Z" ${getMuscleAttrs('upper_back', isSel('upper_back'))} />
           </g>
 
           <!-- Triceps -->
           <g data-muscle="triceps" tabindex="0" role="button" aria-label="Toggle Triceps" class="muscle-group ${isSel('triceps') ? 'muscle-selected' : ''}">
-            <path d="M93 124 C86 138, 88 158, 98 174 C104 168, 108 148, 107 136 Z" class="muscle-path" />
-            <path d="M207 124 C214 138, 212 158, 202 174 C196 168, 192 148, 193 136 Z" class="muscle-path" />
+            <path d="M93 124 C86 138, 88 158, 98 174 C104 168, 108 148, 107 136 Z" ${getMuscleAttrs('triceps', isSel('triceps'))} />
+            <path d="M207 124 C214 138, 212 158, 202 174 C196 168, 192 148, 193 136 Z" ${getMuscleAttrs('triceps', isSel('triceps'))} />
           </g>
 
           <!-- Forearms -->
           <g data-muscle="forearms" tabindex="0" role="button" aria-label="Toggle Forearms" class="muscle-group ${isSel('forearms') ? 'muscle-selected' : ''}">
-            <path d="M96 178 C88 195, 78 220, 72 244 C77 246, 84 238, 90 220 C96 205, 101 190, 103 178 Z" class="muscle-path" />
-            <path d="M204 178 C212 195, 222 220, 228 244 C223 246, 216 238, 210 220 C204 205, 199 190, 197 178 Z" class="muscle-path" />
+            <path d="M96 178 C88 195, 78 220, 72 244 C77 246, 84 238, 90 220 C96 205, 101 190, 103 178 Z" ${getMuscleAttrs('forearms', isSel('forearms'))} />
+            <path d="M204 178 C212 195, 222 220, 228 244 C223 246, 216 238, 210 220 C204 205, 199 190, 197 178 Z" ${getMuscleAttrs('forearms', isSel('forearms'))} />
           </g>
 
           <!-- Lats -->
           <g data-muscle="lats" tabindex="0" role="button" aria-label="Toggle Lats" class="muscle-group ${isSel('lats') ? 'muscle-selected' : ''}">
-            <path d="M136 132 C120 134, 114 150, 116 174 C120 184, 132 186, 142 184 L146 148 Z" class="muscle-path" />
-            <path d="M164 132 C180 134, 186 150, 184 174 C180 184, 168 186, 158 184 L154 148 Z" class="muscle-path" />
+            <path d="M136 132 C120 134, 114 150, 116 174 C120 184, 132 186, 142 184 L146 148 Z" ${getMuscleAttrs('lats', isSel('lats'))} />
+            <path d="M164 132 C180 134, 186 150, 184 174 C180 184, 168 186, 158 184 L154 148 Z" ${getMuscleAttrs('lats', isSel('lats'))} />
           </g>
 
           <!-- Lower Back -->
           <g data-muscle="lower_back" tabindex="0" role="button" aria-label="Toggle Lower Back" class="muscle-group ${isSel('lower_back') ? 'muscle-selected' : ''}">
-            <path d="M142 186 L142 214 L148 214 L148 186 Z" class="muscle-path" />
-            <path d="M152 186 L152 214 L158 214 L158 186 Z" class="muscle-path" />
+            <path d="M142 186 L142 214 L148 214 L148 186 Z" ${getMuscleAttrs('lower_back', isSel('lower_back'))} />
+            <path d="M152 186 L152 214 L158 214 L158 186 Z" ${getMuscleAttrs('lower_back', isSel('lower_back'))} />
           </g>
 
           <!-- Glutes -->
           <g data-muscle="glutes" tabindex="0" role="button" aria-label="Toggle Glutes" class="muscle-group ${isSel('glutes') ? 'muscle-selected' : ''}">
-            <path d="M149 216 C132 216, 118 226, 116 250 C114 268, 126 280, 148 280 L149 216 Z" class="muscle-path" />
-            <path d="M151 216 C168 216, 182 226, 184 250 C186 268, 174 280, 152 280 L151 216 Z" class="muscle-path" />
+            <path d="M149 216 C132 216, 118 226, 116 250 C114 268, 126 280, 148 280 L149 216 Z" ${getMuscleAttrs('glutes', isSel('glutes'))} />
+            <path d="M151 216 C168 216, 182 226, 184 250 C186 268, 174 280, 152 280 L151 216 Z" ${getMuscleAttrs('glutes', isSel('glutes'))} />
           </g>
 
           <!-- Hamstrings -->
           <g data-muscle="hamstrings" tabindex="0" role="button" aria-label="Toggle Hamstrings" class="muscle-group ${isSel('hamstrings') ? 'muscle-selected' : ''}">
-            <path d="M120 286 C116 304, 118 334, 124 354 C132 356, 142 354, 144 340 C146 320, 146 300, 146 286 Z" class="muscle-path" />
-            <path d="M180 286 C184 304, 182 334, 176 354 C168 356, 158 354, 156 340 C154 320, 154 300, 154 286 Z" class="muscle-path" />
+            <path d="M120 286 C116 304, 118 334, 124 354 C132 356, 142 354, 144 340 C146 320, 146 300, 146 286 Z" ${getMuscleAttrs('hamstrings', isSel('hamstrings'))} />
+            <path d="M180 286 C184 304, 182 334, 176 354 C168 356, 158 354, 156 340 C154 320, 154 300, 154 286 Z" ${getMuscleAttrs('hamstrings', isSel('hamstrings'))} />
           </g>
 
           <!-- Calves -->
           <g data-muscle="calves" tabindex="0" role="button" aria-label="Toggle Calves" class="muscle-group ${isSel('calves') ? 'muscle-selected' : ''}">
-            <path d="M118 368 C112 390, 112 418, 122 444 C128 466, 134 466, 136 444 C144 420, 144 390, 138 368 Z" class="muscle-path" />
-            <path d="M182 368 C188 390, 188 418, 178 444 C172 466, 166 466, 164 444 C156 420, 156 390, 162 368 Z" class="muscle-path" />
+            <path d="M118 368 C112 390, 112 418, 122 444 C128 466, 134 466, 136 444 C144 420, 144 390, 138 368 Z" ${getMuscleAttrs('calves', isSel('calves'))} />
+            <path d="M182 368 C188 390, 188 418, 178 444 C172 466, 166 466, 164 444 C156 420, 156 390, 162 368 Z" ${getMuscleAttrs('calves', isSel('calves'))} />
           </g>
 
           <!-- Feet Base -->
@@ -825,12 +838,14 @@
         const ex = item.exercise;
         const card = document.createElement('div');
         card.className = 'p-5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-4';
+        const pattern = getExerciseMovementPattern(ex);
         card.innerHTML = `
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-start gap-3">
               <span class="w-7 h-7 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-mono font-bold text-cyan-300 text-xs shrink-0 mt-0.5">${idx + 1}</span>
               <div>
-                <div class="flex items-center gap-2 text-[11px] font-mono text-cyan-400">
+                <div class="flex items-center gap-2 text-[11px] font-mono text-cyan-400 flex-wrap">
+                  <span class="font-bold text-cyan-300">✦ ${pattern.name}</span>·
                   <span>${ex.equipment}</span>·<span>${ex.difficulty}</span>·<span class="${item.isTimed ? 'text-emerald-400 font-bold' : 'text-cyan-300 font-bold'}">${item.isTimed ? 'Timed Minutes' : 'Rep Protocol'}</span>
                 </div>
                 <h3 class="text-base font-bold text-white">${ex.name}</h3>
@@ -848,6 +863,21 @@
               </div>
             </div>
           </div>
+
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <button type="button" id="btnToggleCardAnim-${idx}" onclick="toggleCardAnimation(${idx})" class="text-[11px] font-mono font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-cyan-300 hover:border-cyan-400/60 hover:bg-slate-900 transition-all">
+              <span>🎬</span> View Form Demonstration
+            </button>
+            <span class="text-[10px] font-mono text-slate-500">${pattern.tempoCue.split('·')[0]}</span>
+          </div>
+
+          <!-- Expandable Visualizer Demo Container -->
+          <div id="cardAnim-${idx}" class="hidden rounded-2xl bg-slate-950/80 border border-slate-800 p-2 overflow-hidden shadow-inner">
+            <div class="relative w-full aspect-[320/180] max-h-48 bg-slate-950 flex items-center justify-center p-2">
+              ${getExerciseAnimationSvg(ex.animationType, true, 1)}
+            </div>
+          </div>
+
           <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 leading-relaxed">
             <strong class="text-cyan-300 block mb-0.5">Form Cue:</strong> ${ex.coachingCues[0] || ''}
           </div>
@@ -977,6 +1007,355 @@
       }
     }
 
+    // ==========================================
+    // EXERCISE MOVEMENT PATTERNS & SVG ANIMATOR
+    // ==========================================
+    const MOVEMENT_PATTERNS = {
+      push: { name: 'Upper Body Push', badge: 'PUSH', color: '#22d3ee', tempoCue: '3-1-1 Tempo · 3s down, 1s pause, drive' },
+      pull: { name: 'Upper Body Pull', badge: 'PULL', color: '#38bdf8', tempoCue: '2-1-2 Tempo · 2s pull, 1s squeeze, 2s lower' },
+      squat: { name: 'Lower Body Squat', badge: 'SQUAT', color: '#10b981', tempoCue: '3-1-1 Tempo · 3s deep descent, 1s pause, drive' },
+      hinge: { name: 'Posterior Chain Hinge', badge: 'HINGE', color: '#f59e0b', tempoCue: '3-1-1 Tempo · Push hips back, snap to lockout' },
+      core: { name: 'Core & Stabilization', badge: 'CORE', color: '#ec4899', tempoCue: 'Isometric Tension · Steady intra-abdominal brace' },
+      cardio: { name: 'Cardio Interval', badge: 'CARDIO', color: '#eab308', tempoCue: 'Rapid Cadence · Rhythmic explosive interval' }
+    };
+
+    function getExerciseMovementPattern(ex) {
+      if (!ex) return { pattern: 'push', ...MOVEMENT_PATTERNS.push, animKey: 'pushup' };
+      const animKey = ex.animationType || '';
+      if (['bench_press', 'incline_bench', 'pushup', 'chest_fly', 'dip', 'overhead_press', 'lateral_raise', 'tricep_pushdown'].includes(animKey)) {
+        return { pattern: 'push', ...MOVEMENT_PATTERNS.push, animKey };
+      }
+      if (['pullup', 'lat_pulldown', 'bent_over_row', 'seated_cable_row', 'bicep_curl', 'hammer_curl', 'face_pull'].includes(animKey)) {
+        return { pattern: 'pull', ...MOVEMENT_PATTERNS.pull, animKey };
+      }
+      if (['squat', 'leg_press', 'lunges', 'calf_raise'].includes(animKey)) {
+        return { pattern: 'squat', ...MOVEMENT_PATTERNS.squat, animKey };
+      }
+      if (['deadlift', 'rdl', 'glute_bridge'].includes(animKey)) {
+        return { pattern: 'hinge', ...MOVEMENT_PATTERNS.hinge, animKey };
+      }
+      if (['plank', 'mountain_climber', 'superman', 'bicycle_crunch'].includes(animKey)) {
+        return { pattern: 'core', ...MOVEMENT_PATTERNS.core, animKey };
+      }
+      if (['jumping_jacks', 'burpee'].includes(animKey)) {
+        return { pattern: 'cardio', ...MOVEMENT_PATTERNS.cardio, animKey };
+      }
+      const m = ex.primaryMuscles || [];
+      if (m.includes('chest') || m.includes('shoulders') || m.includes('triceps')) return { pattern: 'push', ...MOVEMENT_PATTERNS.push, animKey: 'bench_press' };
+      if (m.includes('lats') || m.includes('upper_back') || m.includes('biceps')) return { pattern: 'pull', ...MOVEMENT_PATTERNS.pull, animKey: 'pullup' };
+      if (m.includes('quadriceps') || m.includes('calves')) return { pattern: 'squat', ...MOVEMENT_PATTERNS.squat, animKey: 'squat' };
+      if (m.includes('hamstrings') || m.includes('glutes') || m.includes('lower_back')) return { pattern: 'hinge', ...MOVEMENT_PATTERNS.hinge, animKey: 'deadlift' };
+      if (m.includes('abs') || m.includes('obliques')) return { pattern: 'core', ...MOVEMENT_PATTERNS.core, animKey: 'plank' };
+      return { pattern: 'push', ...MOVEMENT_PATTERNS.push, animKey: 'pushup' };
+    }
+
+    function getExerciseAnimationSvg(animKey, isPlaying = true, speed = 1) {
+      const dur = (2.4 / speed).toFixed(1) + 's';
+      const playState = isPlaying ? 'running' : 'paused';
+      const animStyle = `animation-duration: ${dur}; animation-play-state: ${playState};`;
+
+      switch (animKey) {
+        case 'bench_press':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <line x1="30" y1="110" x2="190" y2="110" stroke="#334155" stroke-width="6" stroke-linecap="round" />
+              <line x1="45" y1="110" x2="45" y2="140" stroke="#1e293b" stroke-width="5" />
+              <line x1="175" y1="110" x2="175" y2="140" stroke="#1e293b" stroke-width="5" />
+              <ellipse cx="65" cy="104" rx="10" ry="8" fill="#64748b" />
+              <path d="M75 106 L145 106" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+              <path d="M140 106 L155 125 L160 140" stroke="#334155" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+              <circle cx="105" cy="104" r="8" fill="#22d3ee" opacity="0.85" />
+              <g style="animation: bpAnim ${dur} ease-in-out infinite; ${animStyle}">
+                <style>
+                  @keyframes bpAnim { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(28px); } }
+                </style>
+                <line x1="60" y1="65" x2="150" y2="65" stroke="#f8fafc" stroke-width="3.5" stroke-linecap="round" />
+                <rect x="65" y="52" width="5" height="26" rx="2" fill="#22d3ee" stroke="#ffffff" stroke-width="1" />
+                <rect x="140" y="52" width="5" height="26" rx="2" fill="#22d3ee" stroke="#ffffff" stroke-width="1" />
+                <polyline points="105,104 98,82 105,65" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+          `;
+
+        case 'incline_bench':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <line x1="35" y1="135" x2="165" y2="135" stroke="#1e293b" stroke-width="4" />
+              <line x1="50" y1="135" x2="140" y2="70" stroke="#334155" stroke-width="6" stroke-linecap="round" />
+              <circle cx="136" cy="60" r="9" fill="#64748b" />
+              <line x1="130" y1="70" x2="75" y2="125" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+              <circle cx="112" cy="80" r="7" fill="#22d3ee" opacity="0.9" />
+              <g style="animation: incAnim ${dur} ease-in-out infinite; ${animStyle}">
+                <style>
+                  @keyframes incAnim { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(22px); } }
+                </style>
+                <line x1="95" y1="45" x2="125" y2="45" stroke="#f8fafc" stroke-width="3" />
+                <circle cx="95" cy="45" r="5" fill="#22d3ee" />
+                <circle cx="125" cy="45" r="5" fill="#22d3ee" />
+                <polyline points="112,80 106,62 110,48" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+          `;
+
+        case 'pushup':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <line x1="20" y1="125" x2="200" y2="125" stroke="#334155" stroke-width="4" stroke-linecap="round" />
+              <line x1="30" y1="130" x2="190" y2="130" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 4" />
+              <g style="animation: puAnim ${dur} ease-in-out infinite; ${animStyle}">
+                <style>
+                  @keyframes puAnim { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(22px); } }
+                </style>
+                <circle cx="58" cy="72" r="8" fill="#94a3b8" />
+                <line x1="66" y1="76" x2="140" y2="92" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+                <circle cx="82" cy="80" r="7" fill="#22d3ee" opacity="0.85" />
+                <line x1="140" y1="92" x2="185" y2="122" stroke="#334155" stroke-width="8" stroke-linecap="round" />
+                <ellipse cx="187" cy="123" rx="4" ry="3" fill="#64748b" />
+                <polyline points="82,80 72,102 70,125" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+          `;
+
+        case 'dip':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <line x1="50" y1="75" x2="170" y2="75" stroke="#cbd5e1" stroke-width="5" stroke-linecap="round" />
+              <line x1="65" y1="75" x2="65" y2="140" stroke="#334155" stroke-width="5" />
+              <line x1="155" y1="75" x2="155" y2="140" stroke="#334155" stroke-width="5" />
+              <g style="animation: dipAnim ${dur} ease-in-out infinite; ${animStyle}">
+                <style>
+                  @keyframes dipAnim { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(24px); } }
+                </style>
+                <circle cx="110" cy="35" r="8" fill="#94a3b8" />
+                <line x1="110" y1="42" x2="114" y2="88" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+                <circle cx="112" cy="62" r="6" fill="#22d3ee" opacity="0.85" />
+                <polyline points="114,88 122,112 112,128" stroke="#334155" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="108,52 95,75 95,75" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="112,52 125,75 125,75" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+          `;
+
+        case 'chest_fly':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <circle cx="110" cy="42" r="9" fill="#94a3b8" />
+              <line x1="110" y1="50" x2="110" y2="102" stroke="#475569" stroke-width="14" stroke-linecap="round" />
+              <circle cx="110" cy="68" r="8" fill="#22d3ee" opacity="0.9" />
+              <line x1="104" y1="102" x2="98" y2="140" stroke="#334155" stroke-width="5" stroke-linecap="round" />
+              <line x1="116" y1="102" x2="122" y2="140" stroke="#334155" stroke-width="5" stroke-linecap="round" />
+              <g style="animation: flyAnim ${dur} ease-in-out infinite; transform-origin: 110px 65px; ${animStyle}">
+                <style>
+                  @keyframes flyAnim { 0%, 100% { transform: scaleX(0.7); } 50% { transform: scaleX(1.3); } }
+                </style>
+                <path d="M 80 65 Q 110 50 140 65" stroke="#38bdf8" stroke-width="4" fill="none" stroke-linecap="round" />
+                <circle cx="80" cy="65" r="5" fill="#22d3ee" />
+                <circle cx="140" cy="65" r="5" fill="#22d3ee" />
+              </g>
+            </svg>
+          `;
+
+        case 'pullup':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <line x1="40" y1="25" x2="180" y2="25" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" />
+              <line x1="50" y1="25" x2="50" y2="140" stroke="#334155" stroke-width="4" />
+              <line x1="170" y1="25" x2="170" y2="140" stroke="#334155" stroke-width="4" />
+              <g style="animation: pullAnim ${dur} ease-in-out infinite; ${animStyle}">
+                <style>
+                  @keyframes pullAnim { 0%, 100% { transform: translateY(32px); } 50% { transform: translateY(0px); } }
+                </style>
+                <circle cx="110" cy="35" r="8" fill="#94a3b8" />
+                <line x1="110" y1="43" x2="110" y2="85" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+                <circle cx="110" cy="60" r="7" fill="#38bdf8" opacity="0.9" />
+                <polyline points="104,48 88,32 90,25" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="116,48 132,32 130,25" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="110,85 106,108 114,122" stroke="#334155" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+          `;
+
+        case 'lat_pulldown':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <line x1="110" y1="15" x2="110" y2="35" stroke="#334155" stroke-width="4" />
+              <circle cx="110" cy="25" r="5" fill="#64748b" />
+              <line x1="85" y1="120" x2="135" y2="120" stroke="#1e293b" stroke-width="6" />
+              <circle cx="110" cy="65" r="8" fill="#94a3b8" />
+              <line x1="110" y1="73" x2="110" y2="115" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+              <circle cx="110" cy="85" r="7" fill="#38bdf8" opacity="0.9" />
+              <line x1="105" y1="115" x2="105" y2="140" stroke="#334155" stroke-width="5" />
+              <g style="animation: latAnim ${dur} ease-in-out infinite; ${animStyle}">
+                <style>
+                  @keyframes latAnim { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(26px); } }
+                </style>
+                <line x1="65" y1="42" x2="155" y2="42" stroke="#f8fafc" stroke-width="3" stroke-linecap="round" />
+                <polyline points="105,75 85,55 80,42" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="115,75 135,55 140,42" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+          `;
+
+        case 'overhead_press':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <circle cx="110" cy="68" r="8" fill="#94a3b8" />
+              <line x1="110" y1="76" x2="110" y2="115" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+              <circle cx="103" cy="80" r="5" fill="#22d3ee" opacity="0.9" />
+              <circle cx="117" cy="80" r="5" fill="#22d3ee" opacity="0.9" />
+              <line x1="106" y1="115" x2="102" y2="145" stroke="#334155" stroke-width="5" stroke-linecap="round" />
+              <line x1="114" y1="115" x2="118" y2="145" stroke="#334155" stroke-width="5" stroke-linecap="round" />
+              <g style="animation: ohpAnim ${dur} ease-in-out infinite; ${animStyle}">
+                <style>
+                  @keyframes ohpAnim { 0%, 100% { transform: translateY(28px); } 50% { transform: translateY(-8px); } }
+                </style>
+                <line x1="75" y1="52" x2="145" y2="52" stroke="#f8fafc" stroke-width="3.5" stroke-linecap="round" />
+                <rect x="78" y="42" width="4" height="20" rx="1" fill="#22d3ee" />
+                <rect x="138" y="42" width="4" height="20" rx="1" fill="#22d3ee" />
+                <polyline points="104,80 92,65 95,52" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="116,80 128,65 125,52" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+          `;
+
+        case 'squat':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <line x1="40" y1="140" x2="180" y2="140" stroke="#334155" stroke-width="3" stroke-linecap="round" />
+              <g style="animation: squatAnim ${dur} ease-in-out infinite; ${animStyle}">
+                <style>
+                  @keyframes squatAnim { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(30px); } }
+                </style>
+                <circle cx="110" cy="45" r="8" fill="#94a3b8" />
+                <line x1="110" y1="53" x2="110" y2="85" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+                <circle cx="110" cy="88" r="8" fill="#10b981" opacity="0.9" />
+                <line x1="75" y1="55" x2="145" y2="55" stroke="#f8fafc" stroke-width="3.5" stroke-linecap="round" />
+                <rect x="78" y="44" width="5" height="22" rx="1" fill="#10b981" />
+                <rect x="137" y="44" width="5" height="22" rx="1" fill="#10b981" />
+                <polyline points="105,85 96,110 102,140" stroke="#10b981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="115,85 124,110 118,140" stroke="#10b981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+          `;
+
+        case 'deadlift':
+        case 'rdl':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <line x1="40" y1="140" x2="180" y2="140" stroke="#334155" stroke-width="3" stroke-linecap="round" />
+              <polyline points="106,90 102,115 106,140" stroke="#f59e0b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+              <polyline points="114,90 118,115 114,140" stroke="#f59e0b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+              <g style="animation: dlAnim ${dur} ease-in-out infinite; ${animStyle}">
+                <style>
+                  @keyframes dlAnim { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(32px); } }
+                </style>
+                <circle cx="110" cy="50" r="8" fill="#94a3b8" />
+                <line x1="110" y1="58" x2="110" y2="90" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+                <circle cx="110" cy="85" r="7" fill="#f59e0b" opacity="0.9" />
+                <line x1="75" y1="88" x2="145" y2="88" stroke="#f8fafc" stroke-width="3.5" stroke-linecap="round" />
+                <circle cx="75" cy="88" r="9" fill="#1e293b" stroke="#f59e0b" stroke-width="2" />
+                <circle cx="145" cy="88" r="9" fill="#1e293b" stroke="#f59e0b" stroke-width="2" />
+                <polyline points="105,65 100,78 102,88" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="115,65 120,78 118,88" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+          `;
+
+        case 'bicep_curl':
+        case 'hammer_curl':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <circle cx="110" cy="45" r="8" fill="#94a3b8" />
+              <line x1="110" y1="53" x2="110" y2="95" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+              <circle cx="104" cy="70" r="6" fill="#38bdf8" opacity="0.9" />
+              <line x1="106" y1="95" x2="102" y2="140" stroke="#334155" stroke-width="5" stroke-linecap="round" />
+              <line x1="114" y1="95" x2="118" y2="140" stroke="#334155" stroke-width="5" stroke-linecap="round" />
+              <g style="animation: curlAnim ${dur} ease-in-out infinite; transform-origin: 104px 68px; ${animStyle}">
+                <style>
+                  @keyframes curlAnim { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-75deg); } }
+                </style>
+                <polyline points="104,68 100,90 102,108" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="102" cy="108" r="5" fill="#22d3ee" />
+              </g>
+            </svg>
+          `;
+
+        case 'plank':
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <line x1="30" y1="125" x2="190" y2="125" stroke="#334155" stroke-width="4" stroke-linecap="round" />
+              <circle cx="65" cy="85" r="8" fill="#94a3b8" />
+              <line x1="72" y1="88" x2="155" y2="105" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+              <circle cx="108" cy="95" r="9" fill="#ec4899" opacity="0.85" style="animation: coreGlow 1.8s ease-in-out infinite; ${animStyle}" />
+              <style>
+                @keyframes coreGlow { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.2); opacity: 1; } }
+              </style>
+              <line x1="155" y1="105" x2="175" y2="122" stroke="#334155" stroke-width="8" stroke-linecap="round" />
+              <polyline points="88,92 84,112 72,125" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          `;
+
+        default:
+          return `
+            <svg viewBox="0 0 220 150" class="w-full h-full max-h-48 object-contain">
+              <line x1="40" y1="135" x2="180" y2="135" stroke="#334155" stroke-width="3" stroke-linecap="round" />
+              <g style="animation: genAnim ${dur} ease-in-out infinite; ${animStyle}">
+                <style>
+                  @keyframes genAnim { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(18px); } }
+                </style>
+                <circle cx="110" cy="50" r="8" fill="#94a3b8" />
+                <line x1="110" y1="58" x2="110" y2="95" stroke="#475569" stroke-width="12" stroke-linecap="round" />
+                <circle cx="110" cy="75" r="7" fill="#22d3ee" opacity="0.9" />
+                <polyline points="105,70 85,85 75,98" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="115,70 135,85 145,98" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="106,95 98,118 104,135" stroke="#334155" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="114,95 122,118 116,135" stroke="#334155" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+          `;
+      }
+    }
+
+    let playerAnimPlaying = true;
+    let playerAnimSpeed = 1;
+
+    function togglePlayerAnimPlay() {
+      playerAnimPlaying = !playerAnimPlaying;
+      const svg = document.querySelector('#playerAnimContainer svg');
+      const icon = document.getElementById('playerAnimPlayIcon');
+      if (svg) {
+        svg.style.animationPlayState = playerAnimPlaying ? 'running' : 'paused';
+        const animated = svg.querySelectorAll('[style*="animation"], g, path, line, circle, rect');
+        animated.forEach(el => el.style.animationPlayState = playerAnimPlaying ? 'running' : 'paused');
+      }
+      if (icon) icon.textContent = playerAnimPlaying ? '⏸️' : '▶️';
+    }
+
+    function togglePlayerAnimSpeed() {
+      playerAnimSpeed = playerAnimSpeed === 1 ? 0.5 : 1;
+      const text = document.getElementById('playerAnimSpeedText');
+      if (text) text.textContent = playerAnimSpeed + 'x';
+      const container = document.getElementById('playerAnimContainer');
+      const item = routine.exercises[playerExIdx];
+      if (container && item) {
+        container.innerHTML = getExerciseAnimationSvg(item.exercise.animationType, playerAnimPlaying, playerAnimSpeed);
+      }
+    }
+
+    function toggleCardAnimation(idx) {
+      const container = document.getElementById(`cardAnim-${idx}`);
+      const btn = document.getElementById(`btnToggleCardAnim-${idx}`);
+      if (!container) return;
+      const isHidden = container.classList.contains('hidden');
+      if (isHidden) {
+        container.classList.remove('hidden');
+        if (btn) btn.innerHTML = '<span>🎬</span> Hide Form';
+      } else {
+        container.classList.add('hidden');
+        if (btn) btn.innerHTML = '<span>🎬</span> View Form';
+      }
+    }
+
     function renderPlayerUI() {
       const body = document.getElementById('playerBody');
       const footer = document.getElementById('playerFooter');
@@ -1017,12 +1396,47 @@
       const ex = item.exercise;
       const mins = Math.floor(playerSecondsRemaining / 60);
       const secs = (playerSecondsRemaining % 60).toString().padStart(2, '0');
+      const pattern = getExerciseMovementPattern(ex);
 
       body.innerHTML = `
         <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/80 pb-2">
           <span>Exercise <strong class="text-white">${playerExIdx + 1}</strong> of <strong class="text-white">${routine.exercises.length}</strong></span>
           <span class="text-cyan-300 font-bold font-mono">Set ${playerSetIdx + 1} of ${item.sets}</span>
         </div>
+
+        <!-- INTERACTIVE BIOMECHANICAL EXERCISE FORM ANIMATION VISUALIZER -->
+        <div class="rounded-2xl bg-slate-950/90 border border-slate-800 overflow-hidden shadow-xl">
+          <div class="px-4 py-2.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 text-[10px] font-mono tracking-wider font-bold uppercase text-cyan-400">
+              <span class="w-2 h-2 rounded-full" style="background-color: ${pattern.color}"></span>
+              <span>${pattern.name}</span>
+              <span class="text-slate-600">/</span>
+              <span class="text-slate-300">${ex.mechanics}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="togglePlayerAnimSpeed()" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-mono font-bold text-slate-300 transition-colors" title="Toggle animation speed">
+                <span id="playerAnimSpeedText">${playerAnimSpeed}x</span>
+              </button>
+              <button type="button" onclick="togglePlayerAnimPlay()" class="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-cyan-300 transition-colors" title="Play or pause animation">
+                <span id="playerAnimPlayIcon">${playerAnimPlaying ? '⏸️' : '▶️'}</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="relative w-full aspect-[320/180] max-h-52 bg-slate-950 flex items-center justify-center p-2" id="playerAnimContainer">
+            ${getExerciseAnimationSvg(ex.animationType, playerAnimPlaying, playerAnimSpeed)}
+          </div>
+
+          <div class="px-3 py-2 bg-slate-900/60 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-400">
+            <span class="text-cyan-300 font-semibold flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+              Live Form Loop Active
+            </span>
+            <span class="text-slate-400 text-[10px]">${pattern.tempoCue}</span>
+          </div>
+        </div>
+
+        <!-- Exercise Details Card -->
         <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
           <div class="flex items-start justify-between">
             <div>
@@ -1034,8 +1448,9 @@
               <span class="text-lg font-black font-mono text-white">${item.reps}</span>
             </div>
           </div>
-          <div class="text-xs text-slate-300 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/60">
-            <strong>Key Cue:</strong> ${ex.coachingCues[0] || ''}
+          <div class="text-xs text-slate-300 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/60 leading-relaxed">
+            <strong class="text-cyan-300 block mb-0.5">Coaching Form Cue:</strong>
+            ${ex.coachingCues[0] || 'Maintain smooth cadence and controlled range of motion.'}
           </div>
           ${item.isTimed ? `
             <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">

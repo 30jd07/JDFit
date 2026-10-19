@@ -212,30 +212,30 @@ export const WorkoutPlayerModal: React.FC<WorkoutPlayerModalProps> = ({
       >
         
         {/* Top Control Bar */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-900/95 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-            <div>
-              <span className="text-[10px] uppercase font-mono tracking-wider text-cyan-400 block font-bold">
+        <div className="sticky top-0 z-20 shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-3.5 bg-slate-900/98 border-b border-slate-800 gap-2 sm:gap-4 backdrop-blur-md">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shrink-0" />
+            <div className="min-w-0 flex-1">
+              <span className="text-[9px] sm:text-[10px] uppercase font-mono tracking-wider text-cyan-400 block font-bold leading-tight">
                 Live Workout Player
               </span>
-              <h2 className="text-sm font-bold text-white truncate max-w-xs">
+              <h2 className="text-xs sm:text-sm font-bold text-white truncate block" title={routine.title}>
                 {routine.title}
               </h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Total Elapsed Workout Timer */}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono font-bold text-slate-300">
+            <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-slate-950 border border-cyan-500/40 text-xs sm:text-sm font-mono font-bold text-cyan-300 shadow-sm shrink-0 whitespace-nowrap">
               <Clock className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{formatTime(totalElapsedWorkoutSeconds)}</span>
+              <span className="tabular-nums tracking-wide">{formatTime(totalElapsedWorkoutSeconds)}</span>
             </div>
 
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
               title="Exit Workout Player"
             >
               <X className="w-5 h-5" />
